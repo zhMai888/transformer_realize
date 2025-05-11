@@ -11,11 +11,17 @@ class LayerNorm(nn.Module):
     def forward(self, x):
         # 均值和方差
         mean = x.mean(dim=-1, keepdim=True)
-        var = x.var(dim=-1, keepdim=True, unbiased=False)
+        std = x.std(dim=-1, keepdim=True, unbiased=False)
 
         # 归一化
-        x_normalized = (x - mean) / torch.sqrt(var + self.eps)
+        x_normalized = (x - mean) / torch.sqrt(std + self.eps)
 
         # 进行缩放和偏移
         return self.gamma * x_normalized + self.beta
+
+if __name__ == '__main__':
+    layer_norm = LayerNorm(512)
+    x = torch.randn(2, 10, 512)
+    output = layer_norm(x)
+    print(output.shape)  # 应该是 [2, 10, 512]
 

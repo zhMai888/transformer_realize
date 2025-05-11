@@ -1,8 +1,10 @@
+import torch
 import torch.nn as nn
 
 class MultiHeadAttention(nn.Module):
     def __init__(self,n_head, d_model, dropout=0.1):
         super(MultiHeadAttention,self).__init__()
+        assert d_model % n_head == 0
         self.n_head = n_head  # 头数
         self.d_model = d_model  # 模型维度
         self.d_h = d_model // n_head  # 每个头的维度
@@ -40,3 +42,14 @@ class MultiHeadAttention(nn.Module):
         # 合并输出
         output = self.w_out(atten_score)
         return output
+
+if __name__ == '__main__':
+    d_model = 64
+    n_head = 4
+    batch_size = 4
+    seq_len = 8
+    x = torch.randn(batch_size, seq_len, d_model)
+
+    mul = MultiHeadAttention(n_head, d_model)
+    output = mul(x)
+    print(output.shape)  # [4, 8, 64]

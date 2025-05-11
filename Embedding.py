@@ -25,20 +25,24 @@ class PositionEmbedding(nn.Module):
         self.embedding[:,1::2] = torch.cos(self.pos * self.div_term)
 
     def forward(self, x):
-        return self.embedding[:, :x.size(1)]
+        return self.embedding[:x.size(1), :].unsqueeze(0).expand(x.size(0), -1, -1)
 
 
 class EmbeddingLayer(nn.Module):
     def __init__(self, max_len, embedding_dim,num_embeddings,drop_prob=0.1):
         super(EmbeddingLayer,self).__init__()
-        self.num_embeddings = num_embeddings
-        self.embedding_dim = embedding_dim
-        self.drop_prob = drop_prob
         self.token_embedding = TokenEmbedding(num_embeddings, embedding_dim)
         self.pos_embedding = PositionEmbedding(max_len, embedding_dim)
-        self.dropout = nn.Dropout(p=self.drop_prob)
+        self.dropout = nn.Dropout(p=drop_prob)
 
     def forward(self, x):
         tokenEmbedding = self.token_embedding(x)
         positionEmbedding = self.pos_embedding(x)
         return self.dropout(tokenEmbedding + positionEmbedding)
+
+if __name__ == '__main__':
+    embedding = EmbeddingLayer(10, 512, 10000, 0.1)
+    x = torch.randint(0, 10000, (2, 10))
+    print(x)
+    print(embedding(x).shape)  # [2, 10, 512]
+    print(embedding(x))
